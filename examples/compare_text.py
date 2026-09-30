@@ -22,6 +22,7 @@ def main() -> None:
     parser.add_argument("--extractor", choices=["rules", "ollama", "hybrid"], default="rules")
     parser.add_argument("--model", help="Existing local Ollama model name (required for ollama or hybrid)")
     parser.add_argument("--endpoint", default="http://127.0.0.1:11434/api/chat")
+    parser.add_argument("--summary", action="store_true", help="Hide individual predictions")
     args = parser.parse_args()
 
     if args.extractor == "rules":
@@ -33,6 +34,8 @@ def main() -> None:
         extractor = local if args.extractor == "ollama" else HybridExtractor(local)
     cases = read_cases(args.dataset)
     report = run_benchmark(cases, extractor, split=args.split)
+    if args.summary:
+        report = {key: val for key, val in report.items() if key != "results"}
     print(json.dumps({
         "extractor": args.extractor,
         "model": args.model if args.extractor != "rules" else None,
