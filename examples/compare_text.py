@@ -22,6 +22,10 @@ def main() -> None:
     parser.add_argument("--extractor", choices=["rules", "ollama", "hybrid"], default="rules")
     parser.add_argument("--model", help="Existing local Ollama model name (required for ollama or hybrid)")
     parser.add_argument("--endpoint", default="http://127.0.0.1:11434/api/chat")
+    parser.add_argument("--think", choices=["default", "on", "off"], default="default",
+                        help="Ollama thinking mode; default preserves prior behavior")
+    parser.add_argument("--prompt", choices=["strict", "literal"], default="strict",
+                        help="Local LLM prompt mode; default preserves v0.4 behavior")
     parser.add_argument("--summary", action="store_true", help="Hide individual predictions")
     parser.add_argument("--case", action="append", default=[],
                         help="Run only an individual case ID, e.g. --case t01; repeatable")
@@ -32,7 +36,9 @@ def main() -> None:
     else:
         if not args.model:
             parser.error("--model is required for ollama or hybrid; no model is auto-installed")
-        local = OllamaExtractor(model=args.model, endpoint=args.endpoint)
+        think = {"default": None, "on": True, "off": False}[args.think]
+        local = OllamaExtractor(model=args.model, endpoint=args.endpoint,
+                                think=think, prompt_mode=args.prompt)
         extractor = local if args.extractor == "ollama" else HybridExtractor(local)
     cases = read_cases(args.dataset)
     report = run_benchmark(cases, extractor, split=args.split,
@@ -42,6 +48,8 @@ def main() -> None:
     print(json.dumps({
         "extractor": args.extractor,
         "model": args.model if args.extractor != "rules" else None,
+        "think": args.think if args.extractor != "rules" else None,
+        "prompt": args.prompt if args.extractor != "rules" else None,
         "dataset": str(args.dataset),
         "report": report,
     }, ensure_ascii=False, indent=2))
