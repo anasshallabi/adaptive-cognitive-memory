@@ -12,14 +12,17 @@ import json
 from pathlib import Path
 
 from acm.text_benchmark import read_cases, run_benchmark
-from acm.text_extraction import HybridExtractor, OllamaExtractor, RuleExtractor
+from acm.text_extraction import (
+    ConservativeHybridExtractor, HybridExtractor, OllamaExtractor, RuleExtractor,
+)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="v0.4 controlled vs flexible text extraction")
     parser.add_argument("--dataset", default=str(Path(__file__).resolve().parents[1] / "benchmarks" / "text_v04.jsonl"))
     parser.add_argument("--split", choices=["dev", "test"], default="test")
-    parser.add_argument("--extractor", choices=["rules", "ollama", "hybrid"], default="rules")
+    parser.add_argument("--extractor", choices=["rules", "ollama", "hybrid", "conservative"], default="rules",
+                        help="conservative is exploratory and was designed after viewing v0.5 test failures")
     parser.add_argument("--model", help="Existing local Ollama model name (required for ollama or hybrid)")
     parser.add_argument("--endpoint", default="http://127.0.0.1:11434/api/chat")
     parser.add_argument("--think", choices=["default", "on", "off"], default="default",
@@ -39,7 +42,11 @@ def main() -> None:
         think = {"default": None, "on": True, "off": False}[args.think]
         local = OllamaExtractor(model=args.model, endpoint=args.endpoint,
                                 think=think, prompt_mode=args.prompt)
-        extractor = local if args.extractor == "ollama" else HybridExtractor(local)
+        extractor = (
+            local if args.extractor == "ollama"
+            else ConservativeHybridExtractor(local) if args.extractor == "conservative"
+            else HybridExtractor(local)
+        )
     cases = read_cases(args.dataset)
     report = run_benchmark(cases, extractor, split=args.split,
                            case_ids=set(args.case) if args.case else None)
