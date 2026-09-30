@@ -52,6 +52,18 @@ Le test de démonstration ne nécessite ni Ollama ni GPU :
 python -m examples.evidence_review
 ```
 
+## Mémoire persistante v0.8
+
+ACM conserve désormais sur disque ses affirmations candidates, validations,
+contradictions et rétractations via SQLite. Les décisions et sources sont
+restaurées après fermeture du programme, sans relancer le modèle Ollama.
+L'historique reste révisable mais ne garantit pas la véracité d'une
+information. [Démonstration et limites](DURABLE_EVIDENCE.md).
+
+```powershell
+python -m examples.durable_review
+```
+
 ## Commandes
 
 ```powershell

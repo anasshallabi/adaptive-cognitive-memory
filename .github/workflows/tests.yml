@@ -20,3 +20,5 @@ jobs:
         run: python -m examples.compare_text --dataset benchmarks/text_v05.jsonl --extractor rules --split dev --summary
       - name: Exercise evidence review demo (no Ollama needed)
         run: python -m examples.evidence_review > /dev/null
+      - name: Exercise persistent SQLite replay and correction demo
+        run: python -m examples.durable_review > /dev/null
