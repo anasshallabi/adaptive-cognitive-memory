@@ -26,6 +26,16 @@ python -m examples.compare_text --extractor hybrid --model gemma3:4b --split tes
 
 Sans Ollama, le mode `rules` est gratuit, sans installation Python supplémentaire. Pour le mode `hybrid`, le calcul du modèle tourne sur ta machine, et consomme des ressources locales, sans nécessiter de crédit API externe.
 
-Consulte [l'expérience v0.4](EXTRACTION.md), [le moteur textuel v0.3](TEXT.md), [le module visuel](VISION.md) et [la méthode d'évaluation](EVALUATION.md).
+Premiers résultats locaux : avec Qwen3 14B, le moteur hybride a obtenu **4 réponses exactes sur 12**, soit le même résultat que les règles seules, avec davantage de calcul. [Rapport détaillé et résultat négatif](RESULTS_V04_2026-09-30.md).
+
+La phrase « Zentra est considéré comme une marque » a suscité une abstention. Nous étudions la différence entre **fait direct**, **fait rapporté**, **hypothèse** et **affirmation datée**, sans changer les étiquettes historiques du test. [Note de recherche sur ces nuances](MODALITY.md).
+
+Pour sonder deux phrases sans relancer tout le benchmark :
+
+```powershell
+python -m examples.probe_text --model qwen3:14b --case direct --case attributed
+```
+
+Consulte aussi [l'expérience v0.4](EXTRACTION.md), [le moteur textuel v0.3](TEXT.md), [le module visuel](VISION.md) et [la méthode d'évaluation](EVALUATION.md).
 
 **Limite essentielle :** reconnaître une paraphrase avec un LLM déjà entraîné n'est pas découvrir un concept à partir de zéro. Nous n'avons pas encore validé de nouvelle architecture cognitive ; la recherche continue.
