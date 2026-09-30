@@ -1,23 +1,26 @@
 # ACM research notebook — 2026-09-30
 
-## Original observation
+## Original question
 
-A human can see the name of a previously unknown car brand once and sometimes recognize it later and associate it with existing concepts (brand, logo, car, manufacturer). Learning new *facts* should be distinguished from acquiring new *concepts* or perceptual skills.
+Why can a person see a new car brand once, remember its name, and connect it to previously learned concepts, while current machine learning often depends on large-scale pretraining? We distinguish **single-exposure fact binding** from **new concept induction**.
 
-## Research questions
+## Testable questions
 
-- RQ1: How quickly can a previously unseen association be encoded while keeping a perceptual representation fixed?
-- RQ2: How far does one-example recognition generalize to different cars, viewpoints and unseen brands?
-- RQ3: Can a system reliably build inferences and revise conflicting information with traceable provenance?
-- RQ4: Can **new concepts** be acquired from very few exposures **without supplying the ontology or inference rules by hand**?
-- RQ5: Can such mechanisms improve verified reasoning and reduce computation against *matched baselines*?
+1. Can a memory store facts immediately without changing neural weights?
+2. Can image recognition transfer across different vehicles and sources from one labeled example?
+3. Can text facts preserve provenance, derive transparent relations, and expose contradictions?
+4. Does structured extraction by an existing local pretrained model expand coverage of unseen sentence patterns beyond a fixed grammar?
+5. Can we actually induce new concepts and adjust them after contradictory observations with superior compute/accuracy tradeoffs vs matched baselines?
 
-## Progress and limitations
+## Progress
 
-- v0.1: synthetic vector nearest-neighbor memory.
-- v0.2: frozen pretrained OpenCLIP wrapper, image dataset split validations (not yet measured on real photos).
-- v0.3: deterministic constrained-language triple extraction; fact history and limited inheritance with evidence paths. This is a classic symbolic graph operation and is **not a novel cognitive architecture**.
+- v0.1: synthetic vector memory (nearest-neighbor).
+- v0.2: optional frozen OpenCLIP image front-end and split checks; real-photo empirical results pending.
+- v0.3: deterministic FR/EN controlled-grammar fact memory and bounded graph traversal.
+- v0.4: optional local pretrained Ollama structured extractor, source-span constraints, same fact memory, synthetic held-out paraphrase test suite. Tests validate engineering behavior only; **there are no claimed local-model accuracy numbers yet**.
 
-## Falsification criteria
+## Scientific honesty / falsification
 
-If a simple knowledge graph and a frozen embedding/nearest-neighbor baseline perform as well as ACM at comparable accuracy and compute cost, no new architecture advantage has been established. If unseen phrasings fail, we cannot claim general natural-language learning. If real-image tests fail, we report them. All sources and negative results should remain available.
+At present, ACM is a combination of classic associative retrieval and symbolic graph operations. If a simple knowledge graph or pretrained model with retrieval matches its results, there is no demonstrated advantage. If model-assisted paraphrase extraction improves accuracy at substantial GPU cost, report both quality and total incremental cost. If it does not, publish that too.
+
+A small hand-written synthetic benchmark is for debugging methodology and will not establish general language competence. Robust experiments will need larger independent datasets, sources, revisions, ablations, uncertainty, and reproducible measurements.
