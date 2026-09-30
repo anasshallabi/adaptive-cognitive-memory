@@ -1,25 +1,23 @@
-# Research notebook — 2026-09-30
+# ACM research notebook — 2026-09-30
 
-## Origin
+## Original observation
 
-Observation: a person can encounter the name of an unfamiliar car brand once, remember the name and recognize some future instances by reusing existing knowledge of text, logos, brands, and vehicles. Hypothesis: combine fast episodic binding with structured semantic relations and selective computation, then experimentally test whether this improves knowledge acquisition and transfer.
+A human can see the name of a previously unknown car brand once and sometimes recognize it later and associate it with existing concepts (brand, logo, car, manufacturer). Learning new *facts* should be distinguished from acquiring new *concepts* or perceptual skills.
 
-## Definitions
+## Research questions
 
-- **One-shot acquisition:** new association learned after one labeled observation, while holding any pretrained encoder fixed.
-- **Association:** an explicit retrievable link; not evidence of autonomous reasoning.
-- **Generalization:** success on distinct observations (different cars/lighting/angles), not memorization of the input.
-- **Continual learning:** acquire multiple concepts over time without unacceptable degradation of earlier concepts.
-- **Open-set recognition:** reject new/unseen classes instead of always returning the nearest known label.
+- RQ1: How quickly can a previously unseen association be encoded while keeping a perceptual representation fixed?
+- RQ2: How far does one-example recognition generalize to different cars, viewpoints and unseen brands?
+- RQ3: Can a system reliably build inferences and revise conflicting information with traceable provenance?
+- RQ4: Can **new concepts** be acquired from very few exposures **without supplying the ontology or inference rules by hand**?
+- RQ5: Can such mechanisms improve verified reasoning and reduce computation against *matched baselines*?
 
-## Existing lines of work to study
+## Progress and limitations
 
-Few-shot learning, metric learning and nearest-neighbor retrieval; embedding encoders such as CLIP; complementary learning systems, continual learning, retrieval-augmented generation, semantic graphs, online clustering and model-based inference. These are inspirations, not ACM inventions. Seek peer-reviewed references and evaluate novelty carefully before scientific claims.
+- v0.1: synthetic vector nearest-neighbor memory.
+- v0.2: frozen pretrained OpenCLIP wrapper, image dataset split validations (not yet measured on real photos).
+- v0.3: deterministic constrained-language triple extraction; fact history and limited inheritance with evidence paths. This is a classic symbolic graph operation and is **not a novel cognitive architecture**.
 
-## Milestones
+## Falsification criteria
 
-M0: implement small transparent baseline (done). M1: replace synthetic features with reproducible image embeddings. M2: build carefully separated test episodes; M3: evaluate unknown-class detection and memory retention; M4: investigate concept formation without hand-provided links; M5: report negative as well as positive results.
-
-## Falsification
-
-The strong hypothesis is **not supported** if performance on held-out examples, unknown classes, compute, or forgetting is no better than a simple pretrained encoder with nearest-neighbor retrieval under fair comparison. Results must be logged, not selectively reported.
+If a simple knowledge graph and a frozen embedding/nearest-neighbor baseline perform as well as ACM at comparable accuracy and compute cost, no new architecture advantage has been established. If unseen phrasings fail, we cannot claim general natural-language learning. If real-image tests fail, we report them. All sources and negative results should remain available.
