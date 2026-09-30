@@ -113,6 +113,20 @@ model inference on different hardware.
 
 **The real v0.4 model comparison has not been executed yet.**
 
+## Diagnose model fallback and avoid unnecessary GPU work
+
+A first local run of `qwen3:14b` found **no test accuracy improvement** over rules (both 4/12 exact), with substantial added latency. See [the recorded negative result](RESULTS_V04_2026-09-30.md). It is essential to inspect **which route** produced each answer before changing the prompt.
+
+The CLI now reports `route_stats`: counts, correct predictions, abstentions, errors and extraction latency broken down by `rules`, `guard` (question rejected before model), and `fallback` (local LLM). The full report includes per-item `route` and `outcome`.
+
+To debug **one** failed test without running 12 expensive queries:
+
+```powershell
+python -m examples.compare_text --extractor hybrid --model qwen3:14b --split test --case t03
+```
+
+`--case` can be repeated. This diagnostic does not alter the benchmark's dataset or test labels. After studying held-out errors, create a fresh final evaluation set before reporting gains from any prompt or code change. No cloud model or API credits are used by the local Ollama route.
+
 ## Safeguards and limitations
 
 - Source sentence and caller-supplied provenance are preserved in `Claim`.
