@@ -13,7 +13,8 @@ ACM investigates whether an artificial system can memorize new facts from a sing
 - **v0.3** — controlled French/English triple extraction with source-tracked facts, `is_a` inference and contradiction reporting.
 - **v0.4** — *optional* loopback-only Ollama structured text extractor behind the same memory interface, deterministic rules as cheap first pass, 20-item synthetic FR/EN benchmark with held-out paraphrase families, and unit tests with mocked model replies.
 
-- **v0.5 evaluation protocol** — a **new 40-sentence FR/EN synthetic corpus**, with predeclared claim/abstention labeling, independently tracked dev/test partitions, and CLI flags for fixed local LLM settings. **No new model-based accuracy has been measured.**
+- **v0.5 evaluation** — 40 synthetic FR/EN claims with dev/test partitions. The [first local Qwen3 result](docs/RESULTS_V05_2026-09-30.md) was **12/12 on dev but only 13/28 (46.4%) on test**; only 4/10 required abstentions were correct. Rule overmatching caused dangerous false facts.
+- **v0.6 experimental safety gate** — an **opt-in** conservative heuristic prefilter that rejects recognized uncertain, attributed, historical, multi-clause or instruction-like statements before memory binding and defers complex entity subjects to the model. [Method and limitations](docs/CONSERVATIVE_GATE.md). No independent performance result yet.
 
 **Important:** v0.4 uses a **pretrained** model for flexible language extraction; it doesn't train that model from one sentence or discover concepts autonomously. Storing a claim is not fact-checking. A [first local Qwen3 14B run](docs/RESULTS_V04_2026-09-30.md) matched rules-only accuracy at **4/12** on a small hand-written test and took much longer. A [follow-up attribution/uncertainty analysis](docs/MODALITY.md) warns that some original benchmark labels may conflate a reported classification with a direct fact.
 
@@ -46,7 +47,8 @@ The default rule-based mode needs **no external Python dependencies, model downl
 - [x] Optional flexible text extraction + a small hand-written benchmark harness
 - [x] Publish first local Qwen3 results **including failure cases and semantic ambiguity caveats**
 - [x] Freeze a separately authored protocol with direct, negated, attributed, modal and historical examples
-- [ ] Run the **new** v0.5 local-model comparison and publish all outcomes and errors
+- [x] Publish **negative v0.5 local-model findings** with per-route error analysis (13/28 exact test accuracy)
+- [ ] Evaluate conservative screening on a fresh independently annotated test set
 - [ ] Build durable evidence-aware memory, revisions and corrections
 - [ ] Evaluate concept induction versus matched graph, retrieval and pretrained-model baselines
 
