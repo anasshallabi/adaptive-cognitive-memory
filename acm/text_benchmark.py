@@ -163,7 +163,8 @@ def run_benchmark(
                 "object": claim.object, "positive": claim.positive,
             },
             "exact": right, "error": error,
-            "route": route, "outcome": (
+            "route": route, "reason": getattr(extractor, "last_reason", None),
+            "outcome": (
                 "error" if error is not None
                 else "abstained" if claim is None else "extracted"
             ),
