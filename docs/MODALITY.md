@@ -63,6 +63,32 @@ API. Model execution occurs through the configured *loopback-only*
 Ollama endpoint. These probes were designed **after observing t03**;
 their scores are not suitable as fresh generalization evidence.
 
+## Update: direct assertion abstention also observed
+
+On 2026-09-30, a local model-only probe using `qwen3:14b`
+returned **abstain on both** the direct sentence
+`Zentra is a car brand.` and the attributed sentence
+`Zentra is considered a car brand.`. Thus the original linguistic
+modality distinction remains **semantically important**, but **does not
+explain why this model run abstained**. This is a live research
+hypothesis, not a confirmed diagnosis.
+
+We now isolate the optional Ollama Qwen3 `think` flag:
+
+```powershell
+git pull origin main
+python -m examples.probe_text --model qwen3:14b --think off --case direct --case attributed
+```
+
+The new `--think off` sends `think: false`; `--think default`
+preserves the previously used backend default. Output reports only
+the *presence* of a model thinking field, structured status, token
+counts and timing if supplied, never the contents of thinking.
+Changing the thinking setting is a **post-hoc diagnostic**, not
+evidence of novel learning or a valid new test-set comparison.
+
+See Ollama's official [Thinking capability](https://docs.ollama.com/capabilities/thinking).
+
 ## Scientific protocol correction needed
 
 1. Keep `benchmarks/text_v04.jsonl` unchanged, retaining its original
