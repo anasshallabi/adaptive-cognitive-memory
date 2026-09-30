@@ -1,36 +1,39 @@
 # Adaptive Cognitive Memory (ACM)
 
-**Status: experimental v0.2 baseline. No breakthrough, human-like concept formation, real-image accuracy, or compute savings claimed.**
+**Research prototype v0.3 — rapid association baseline; no claim of human-level intelligence or novel general learning.**
 
-[Documentation française](docs/README.fr.md) · [Real-image guide](docs/VISION.md) · [Research](docs/RESEARCH.md) · [Evaluation](docs/EVALUATION.md) · [Architecture](docs/ARCHITECTURE.md)
+[Français](docs/README.fr.md) · [Text learning](docs/TEXT.md) · [Vision](docs/VISION.md) · [Research](docs/RESEARCH.md) · [Evaluation](docs/EVALUATION.md)
 
-ACM studies (1) one-exposure association and (2) reuse through existing representations without retraining the complete model. Inspired by learning a new car marque from seeing its name once.
+ACM investigates whether observations can be bound to memory after one exposure and linked to existing knowledge without globally retraining model weights.
 
 ## Implemented
-- v0.1 pure Python vector-based associative memory and cosine nearest-neighbor search with manually supplied concept links.
-- v0.2 optional **frozen pretrained OpenCLIP** image encoder, `VisionMemory.learn_image()`, `recognize_image()`, real-photo CLI, and an initial benchmark runner for one support image per known brand plus unknown brands with split leakage checks.
-- **15 dependency-free automated tests** using *synthetic fake encoders*, **not** real-image accuracy measurements.
 
-## Run
+- **v0.1**: In-memory numerical vector associations with cosine nearest neighbor and explicit concept labels.
+- **v0.2**: Optional frozen pretrained OpenCLIP image encoder, real-image CLI, benchmark CSV checks. **Actual photos have not yet been benchmarked**.
+- **v0.3**: Dependency-free, deliberately limited **French/English controlled-text parser**; subject–predicate–object fact store with source tracking; bounded `is_a` inference; positive, negative, conflicting or unknown evidence; simple label-based bridge to image memory. This is **symbolic graph traversal, not general-language comprehension or autonomous concept discovery**.
+
+## Quickstart (Python 3.10+; no dependencies for text and unit tests)
+
 ```bash
 python -m unittest discover -s tests -v
+python -m examples.text_one_shot
 python -m examples.one_shot
 ```
 
-For real-image installation and PowerShell commands, read [docs/VISION.md](docs/VISION.md). Quick example after installing PyTorch, Pillow and `open_clip_torch`:
+For image experiments install PyTorch, Pillow and `open_clip_torch` per [docs/VISION.md](docs/VISION.md). First execution may download model weights.
 
-```bash
-python -m examples.vision_one_shot --support data/toyota_a.jpg --label Toyota --query data/toyota_b.jpg data/honda.jpg --device auto
-```
+## Research standards
 
-The first execution may download pretrained weights. It uses a **non-calibrated example threshold** (not a probability). No local photos are sent to a hosted inference API by this program. Images and weights are not included in the repo.
+We distinguish instant storage of a novel **fact** from learning a novel **concept**, inference from truth, and using a pretrained perceptual encoder from learning perception from scratch. The text parser accepts only documented sentence structures and never evaluates credibility. No cost savings or real-world accuracy gains have been demonstrated.
 
-## Research roadmap
-- [x] Inspectable synthetic vector-memory baseline
-- [x] Optional frozen image encoder and first-pass dataset split checks
-- [ ] **Run and publish real-image measurements** and calibrate unknown rejection
-- [ ] Test logo/text leakage versus genuine unseen-body generalization
-- [ ] Add persistence, provenance, concept induction and continual-learning experiments
-- [ ] Quantify accuracy, compute, VRAM and latency against identical-backbone baselines
+## Roadmap
 
-This is currently **frozen-encoder nearest-neighbor**, not a novel learner. Record negative results and statistical uncertainty. MIT license; contributions welcome via [CONTRIBUTING.md](CONTRIBUTING.md).
+- [x] Numeric association and source-free vector memory
+- [x] Optional real-image interface and split guards
+- [x] Controlled-language memory with provenance, explicit conflicts, and an image/text label bridge
+- [ ] Reproducible empirical benchmark on licensed, held-out real photos
+- [ ] Independent text generalization test beyond known grammar
+- [ ] Durable memory, revisions, provenance confidence evaluation
+- [ ] Test truly new concept induction against matched symbolic and neural baselines
+
+MIT licensed — see [CONTRIBUTING.md](CONTRIBUTING.md).
