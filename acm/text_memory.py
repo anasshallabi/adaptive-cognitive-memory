@@ -119,7 +119,19 @@ class TextMemory:
     claims: list[Claim] = field(default_factory=list)
 
     def learn_text(self, sentence: str, *, source: str = "user") -> dict:
-        claim = parse_claim(sentence, source=source)
+        return self.remember_claim(parse_claim(sentence, source=source))
+
+    def remember_claim(self, claim: Claim) -> dict:
+        """Store a structured claim while preserving its provenance.
+
+        This is a memory operation, not evidence of the claim's truth.
+        External extractors MUST validate untrusted output first.
+        """
+        if not isinstance(claim, Claim) or not all(
+            (claim.subject.strip(), claim.predicate.strip(),
+             claim.object.strip(), claim.source.strip(), claim.text.strip())
+        ):
+            raise ValueError("Nonempty structured Claim required")
         # Duplicate from the *same* source adds no further evidence.
         signature = (claim.source, _key(claim.subject), claim.predicate,
                      _key(claim.object), claim.positive)

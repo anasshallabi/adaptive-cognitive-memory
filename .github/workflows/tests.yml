@@ -11,3 +11,5 @@ jobs:
         with:
           python-version: '3.11'
       - run: python -m unittest discover -s tests -v
+      - name: Compare rule baseline on held-out text cases
+        run: python -m examples.compare_text --extractor rules --split test --summary
