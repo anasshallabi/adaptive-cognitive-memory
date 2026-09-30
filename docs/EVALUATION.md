@@ -1,26 +1,19 @@
-# Reproducible evaluation plan
+# ACM v0.2 — Evaluation protocol
 
-## Stage 0 — engineering smoke tests
+## Engineering stage
 
-Run `python -m unittest discover -s tests -v`. Assertions only demonstrate deterministic behavior on fabricated vector examples. They **do not** measure model accuracy on real-world images.
+Run `python -m unittest discover -s tests -v` without installing neural dependencies. The deterministic tests use synthetic vectors/fake encoders and establish code behavior only — **not** accuracy on real photographs.
 
-## Stage 1 — image tasks (not implemented)
+## Real image stage (runner exists; licensed dataset/results pending)
 
-1. Specify dataset and licenses; group images by physical vehicle/source to prevent near-duplicate leakage.
-2. Use a frozen, documented pretrained image encoder and record weights/version/hash and preprocessing.
-3. For each episode, show exactly one labeled support image for each new brand. Hold out different photos, vehicles, viewpoints and backgrounds for evaluation.
-4. Include disjoint unknown brands to test rejection.
-5. Tune thresholds only on validation brands, never on final test brands.
-6. Repeat episodes across seeds and report confidence intervals.
+1. Obtain licensed test photos; document provenance, exact physical vehicle identity and capture sessions.
+2. Freeze a documented OpenCLIP model and preprocessing, logging weight name, versions, GPU/CPU.
+3. Give exactly **one labeled support photo per known brand**, then test different cars, camera angles and sessions.
+4. Include distinct unseen brands; tune similarity rejection threshold only on **separate validation** brands, never final test data.
+5. Evaluate with visible logos/text vs masked logos and body appearance separately, to detect simple text recognition.
+6. Measure known-class top-1, false-accept/rejection of unknowns, predictions and failure cases; subsequently macro-F1, AUROC, confidence intervals, accuracy after continued learning, RAM/VRAM and latency.
+7. Compare fairly with frozen-encoder cosine nearest-neighbor (already this implementation); maintain the same model/data/settings for any future architectural enhancement.
 
-## Measurements
+See [VISION.md](VISION.md) for manifest format and runnable commands. Manifest checks prevent repeated paths, vehicle IDs and capture groups across splits, but cannot guarantee labels are correct or the pretrained model never saw the photos.
 
-Top-1 accuracy on known brands, macro-F1, unknown-class AUROC / false accept rate, per-class confusion matrix, accuracy after subsequent learning, RAM/VRAM peak, latency and energy where measurable; report hardware and software versions.
-
-## Baselines
-
-(A) frozen encoder + one-shot cosine nearest neighbor; (B) nearest class prototype; (C) random or most-frequent prediction as sanity check; (D) candidate ACM memory enhancements with precisely the same encoder and evaluation data. Separate encoder pretraining cost from incremental learning cost.
-
-## Acceptance / honesty
-
-Do not announce scientific progress solely from a functional program. Publish full configuration, negative results, statistical uncertainty, dataset provenance, and test-time compute. Human-like learning is **not** an established outcome.
+**No real-image measurement or scientific breakthrough is claimed.** Publish failures and uncertainties.
