@@ -250,6 +250,44 @@ class HybridExtractor:
 
 
 @dataclass
+class ConservativeHybridExtractor:
+    """Opt-in safety experiment: guard risky language before learning.
+
+    Unlike the historical HybridExtractor, this refuses statements whose
+    attribution, uncertainty, time, or multiple claims cannot be expressed
+    faithfully by the current Claim schema. For complex entity names it
+    delegates to the local LLM instead of trusting a broad regex subject.
+    This is heuristic and may also miss or incorrectly reject sentences.
+    """
+
+    fallback: FactExtractor
+    rules: RuleExtractor = field(default_factory=RuleExtractor)
+    last_route: str = field(default="not_run", init=False)
+    last_reason: str = field(default="not_run", init=False)
+
+    def extract(self, text: str, *, source: str = "user") -> Claim | None:
+        from .claim_safety import assess_sentence, rule_is_canonical
+
+        self.last_route = "guard"
+        self.last_reason = "not_run"
+        sentence = _validate_input(text, source)
+        decision = assess_sentence(sentence)
+        if not decision.allowed:
+            self.last_reason = decision.reason
+            return None
+        claim = self.rules.extract(sentence, source=source)
+        if claim is not None and rule_is_canonical(sentence, claim):
+            self.last_route = "rules"
+            self.last_reason = "canonical_rule"
+            return claim
+        self.last_route = "fallback"
+        self.last_reason = (
+            "review_noncanonical_subject" if claim is not None else "no_rule_match"
+        )
+        return self.fallback.extract(sentence, source=source)
+
+
+@dataclass
 class FlexibleTextMemory:
     """Bind validated, structured claims into the persistent-in-process v0.3 graph."""
 
