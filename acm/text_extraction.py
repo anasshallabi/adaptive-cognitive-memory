@@ -180,13 +180,21 @@ class HybridExtractor:
 
     fallback: FactExtractor
     rules: RuleExtractor = field(default_factory=RuleExtractor)
+    last_route: str = field(default="not_run", init=False)
 
     def extract(self, text: str, *, source: str = "user") -> Claim | None:
+        # Diagnostic only: benchmark is sequential, not a concurrent interface.
+        # Attribute each result to guard, rules or the expensive fallback.
+        self.last_route = "guard"
         sentence = _validate_input(text, source)
         if "?" in sentence or "？" in sentence:
             return None
         known = self.rules.extract(sentence, source=source)
-        return known if known is not None else self.fallback.extract(sentence, source=source)
+        if known is not None:
+            self.last_route = "rules"
+            return known
+        self.last_route = "fallback"
+        return self.fallback.extract(sentence, source=source)
 
 
 @dataclass

@@ -166,6 +166,43 @@ class TestBenchmark(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "row 1"):
                 read_cases(path)
 
+    def test_rule_trace_on_single_case(self):
+        path = Path(__file__).resolve().parents[1] / "benchmarks" / "text_v04.jsonl"
+        report = run_benchmark(read_cases(path), RuleExtractor(), split="test",
+                               case_ids={"t01"})
+        self.assertEqual(report["count"], 1)
+        self.assertEqual(report["route_stats"]["rules"]["count"], 1)
+        self.assertEqual(report["results"][0]["route"], "rules")
+        self.assertEqual(report["results"][0]["outcome"], "abstained")
+
+    def test_hybrid_fallback_trace_on_one_unseen_pattern(self):
+        path = Path(__file__).resolve().parents[1] / "benchmarks" / "text_v04.jsonl"
+        fallback = OllamaExtractor("fake", transport=lambda _: fake_reply(
+            status="extracted", subject="Zentra", predicate="is_a",
+            object="car brand", positive=True,
+        ))
+        hybrid = HybridExtractor(fallback)
+        report = run_benchmark(read_cases(path), hybrid, split="test",
+                               case_ids={"t03"})
+        self.assertEqual(report["exact_accuracy"], 1.0)
+        self.assertEqual(report["route_stats"]["fallback"]["correct"], 1)
+        self.assertEqual(report["results"][0]["route"], "fallback")
+        self.assertEqual(report["results"][0]["outcome"], "extracted")
+
+    def test_guard_trace_does_not_call_model(self):
+        path = Path(__file__).resolve().parents[1] / "benchmarks" / "text_v04.jsonl"
+        fallback = OllamaExtractor("fake", transport=lambda _: self.fail("No model call expected"))
+        report = run_benchmark(read_cases(path), HybridExtractor(fallback),
+                               split="test", case_ids={"t09"})
+        self.assertEqual(report["route_stats"]["guard"]["count"], 1)
+        self.assertEqual(report["exact_accuracy"], 1.0)
+
+    def test_unknown_case_ids_rejected(self):
+        path = Path(__file__).resolve().parents[1] / "benchmarks" / "text_v04.jsonl"
+        with self.assertRaisesRegex(ValueError, "Unknown case"):
+            run_benchmark(read_cases(path), RuleExtractor(), split="test",
+                          case_ids={"d01"})
+
     def test_only_single_split_scored(self):
         cases = [
             TextCase("1", "dev", "dev-template", "Alpha est une marque.", None),
