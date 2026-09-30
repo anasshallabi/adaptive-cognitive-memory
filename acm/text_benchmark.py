@@ -102,15 +102,29 @@ def _matches(claim: Claim | None, expected: dict | None) -> bool:
     )
 
 
-def run_benchmark(cases: list[TextCase], extractor: FactExtractor, *, split: str = "test") -> dict:
+def run_benchmark(
+    cases: list[TextCase], extractor: FactExtractor, *,
+    split: str = "test", case_ids: set[str] | None = None,
+) -> dict:
     validate_cases(cases)
     if split not in {"dev", "test"}:
         raise ValueError("Choose a single split; do not mix validation with test")
     subset = [c for c in cases if c.split == split]
+    if case_ids is not None:
+        invalid = case_ids - {c.case_id for c in subset}
+        if invalid:
+            raise ValueError(f"Unknown case IDs for {split}: {sorted(invalid)}")
+        subset = [c for c in subset if c.case_id in case_ids]
+    if not subset:
+        raise ValueError("No evaluation cases selected")
     tp = fp = fn = correct = 0
     unknown_total = unknown_correct = 0
     errors = []
     output = []
+    route_stats: dict[str, dict] = {}
+    default_route = ("rules" if type(extractor).__name__ == "RuleExtractor"
+                     else "ollama" if type(extractor).__name__ == "OllamaExtractor"
+                     else "extractor")
     for case in subset:
         start = perf_counter()
         try:
@@ -120,7 +134,16 @@ def run_benchmark(cases: list[TextCase], extractor: FactExtractor, *, split: str
             claim, error = None, type(exc).__name__
             errors.append({"id": case.case_id, "type": error})
         elapsed_ms = (perf_counter() - start) * 1000
+        route = getattr(extractor, "last_route", default_route)
         right = error is None and _matches(claim, case.expected)
+        route_result = route_stats.setdefault(route, {
+            "count": 0, "correct": 0, "abstained": 0, "errors": 0, "latency_ms": 0.0,
+        })
+        route_result["count"] += 1
+        route_result["correct"] += int(right)
+        route_result["abstained"] += int(claim is None and error is None)
+        route_result["errors"] += int(error is not None)
+        route_result["latency_ms"] += elapsed_ms
         correct += int(right)
         if case.expected is None:
             unknown_total += 1
@@ -140,6 +163,10 @@ def run_benchmark(cases: list[TextCase], extractor: FactExtractor, *, split: str
                 "object": claim.object, "positive": claim.positive,
             },
             "exact": right, "error": error,
+            "route": route, "outcome": (
+                "error" if error is not None
+                else "abstained" if claim is None else "extracted"
+            ),
             "latency_ms": round(elapsed_ms, 3),
         })
     precision = tp / (tp + fp) if tp + fp else 0.0
@@ -153,6 +180,10 @@ def run_benchmark(cases: list[TextCase], extractor: FactExtractor, *, split: str
         "f1": 2 * precision * recall / (precision + recall) if precision + recall else 0.0,
         "abstention_on_nonfacts": unknown_correct / unknown_total if unknown_total else None,
         "error_count": len(errors),
+        "route_stats": {
+            route: {**stats, "latency_ms": round(stats["latency_ms"], 3)}
+            for route, stats in sorted(route_stats.items())
+        },
         "total_latency_ms": round(sum(p["latency_ms"] for p in output), 3),
         "results": output,
         "warning": "Hand-written synthetic set. No proof of general language understanding.",
