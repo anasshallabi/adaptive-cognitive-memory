@@ -1,8 +1,8 @@
 # Adaptive Cognitive Memory (ACM)
 
-**Research prototype v0.7 evidence review — open-source experiments on memory, language, and vision. No human-level intelligence or novel general learning has been demonstrated.**
+**Research prototype v0.8 durable evidence review — open-source experiments on memory, language, and vision. No human-level intelligence or novel general learning has been demonstrated.**
 
-[Français](docs/README.fr.md) · [Reviewed evidence v0.7](docs/EVIDENCE_LEDGER.md) · [Frozen v0.5 evaluation](docs/EVALUATION_V05.md) · [Text v0.4 experiment](docs/EXTRACTION.md) · [Controlled language v0.3](docs/TEXT.md) · [Vision](docs/VISION.md) · [Evaluation](docs/EVALUATION.md) · [Research](docs/RESEARCH.md)
+[Français](docs/README.fr.md) · [Persistent evidence v0.8](docs/DURABLE_EVIDENCE.md) · [Reviewed evidence v0.7](docs/EVIDENCE_LEDGER.md) · [Frozen v0.5 evaluation](docs/EVALUATION_V05.md) · [Text v0.4 experiment](docs/EXTRACTION.md) · [Controlled language v0.3](docs/TEXT.md) · [Vision](docs/VISION.md) · [Evaluation](docs/EVALUATION.md) · [Research](docs/RESEARCH.md)
 
 ACM investigates whether an artificial system can memorize new facts from a single observation, connect them to earlier knowledge and reuse them without globally retraining a large neural model.
 
@@ -18,6 +18,8 @@ ACM investigates whether an artificial system can memorize new facts from a sing
 
 - **v0.7 reviewed evidence ledger** — a **separate, in-process** candidate/accepted/rejected/retracted record store with explicit review, immutable audit-event objects, conflict handling, and a projection of reviewed, unopposed evidence into the graph. Nothing automatically becomes reviewed truth after one extraction. [Protocol and limitations](docs/EVIDENCE_LEDGER.md).
 
+- **v0.8 local SQLite evidence** — atomic review-event records, reopening and replay, conflict-aware approved graph after restart, standard-library-only implementation, no model required. [Limitations and demo](docs/DURABLE_EVIDENCE.md).
+
 **Important:** v0.4 uses a **pretrained** model for flexible language extraction; it doesn't train that model from one sentence or discover concepts autonomously. Storing a claim is not fact-checking. A [first local Qwen3 14B run](docs/RESULTS_V04_2026-09-30.md) matched rules-only accuracy at **4/12** on a small hand-written test and took much longer. A [follow-up attribution/uncertainty analysis](docs/MODALITY.md) warns that some original benchmark labels may conflate a reported classification with a direct fact.
 
 ## Quickstart (Python 3.10+)
@@ -26,6 +28,7 @@ ACM investigates whether an artificial system can memorize new facts from a sing
 python -m unittest discover -s tests -v
 python -m examples.text_one_shot
 python -m examples.evidence_review
+python -m examples.durable_review
 python -m examples.compare_text --extractor rules --split test
 ```
 
@@ -54,7 +57,8 @@ The default rule-based mode needs **no external Python dependencies, model downl
 - [x] Archive **post-hoc conservative result** (21/28 on the same known v0.5 examples; not a held-out gain)
 - [x] Add an explicitly reviewed in-process candidate evidence ledger
 - [ ] Evaluate conservative screening on a fresh independently annotated test set
-- [ ] Build durable evidence-aware memory, revisions and corrections
+- [x] Persist review events with local SQLite and recover after simulated restarts
+- [ ] Extend evidence to modality, time and robust entity resolution
 - [ ] Evaluate concept induction versus matched graph, retrieval and pretrained-model baselines
 
 Our objective is to **test hypotheses**, not to rebrand classic symbolic graphs or pretrained LLM capabilities as a new learning breakthrough. MIT license, community contributions welcome.
