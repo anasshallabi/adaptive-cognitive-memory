@@ -1,23 +1,22 @@
-# Architecture — baseline 0.1
+# ACM v0.2 — Architecture
 
-```
- numerical observation (provided externally)
-                   |
-                   v
-        CognitiveMemory.learn()
-             |          |
-             v          v
-      stored vectors   label -> provided concepts
+```text
+Image path -> OpenCLIPEncoder.embed() [frozen pretrained network]
+                          |
+                          v
+            CognitiveMemory.learn()
+             /                     \
+     embedding stored         label -> supplied concepts
              |
              v
-       cosine retrieval + open-set threshold
+       cosine nearest neighbor + threshold
              |
              v
-       match / unknown + linked concepts
+           label / unknown
 ```
 
-**Current:** in-memory list of `Observation` instances; dictionary of concept links; cosine nearest exemplar; thresholded rejection. Complexity: insertion O(d), exact lookup O(Nd) for N stored observations of dimension d; memory O(Nd + E), E link count. No optimized index, updates, inference engine or persistence. Repeated labels can have multiple exemplars.
+The v0.1 numeric feature API remains available. `acm/vision.py` provides a mockable image encoder interface, a frozen pretrained OpenCLIP implementation with CPU/CUDA selection and official RGB preprocessing, and a `VisionMemory` wrapper. The `acm/benchmark.py` runner validates one-shot support and split metadata and reports basic known-vs-unknown performance. Image encoder dependencies are optional for lightweight tests.
 
-**Future components are proposals, not implemented:** visual encoder, online concept induction, confidence calibration, contradiction and provenance tracking, episodic vs semantic memory, consolidation policy, and continual-learning evaluators.
+Memory use scales O(Nd) for N observations of dimensionality d, lookup O(Nd) (plus image-encoding inference); image encoder pretraining and inference costs are not avoided. Stored associations do not persist after process exit. A cosine threshold is not a calibrated probability.
 
-**Known limitations:** a similarity threshold does not guarantee calibrated confidence; one observation may not transfer to different car designs; embeddings inherit pretrained learning and biases; manually supplied concepts are not inferred by the prototype; synthetic vectors cannot validate real-world cognition.
+**Not implemented:** visual concept induction, pretrained-free perception, reasoning, causal world models, contradiction handling, persistence, and measured accuracy/efficiency improvements. Generalization from one exemplar is a testable hypothesis, not a demonstrated result. Read [the detailed vision guide](VISION.md).

@@ -1,40 +1,36 @@
 # Adaptive Cognitive Memory (ACM)
 
-**Status: research prototype / baseline 0.1 — no claim of human-like learning or a breakthrough.**
+**Status: experimental v0.2 baseline. No breakthrough, human-like concept formation, real-image accuracy, or compute savings claimed.**
 
-[Documentation française](docs/README.fr.md) · [Research plan](docs/RESEARCH.md) · [Protocol](docs/EVALUATION.md) · [Architecture](docs/ARCHITECTURE.md)
+[Documentation française](docs/README.fr.md) · [Real-image guide](docs/VISION.md) · [Research](docs/RESEARCH.md) · [Evaluation](docs/EVALUATION.md) · [Architecture](docs/ARCHITECTURE.md)
 
-ACM investigates whether a system can (1) record new information from a single exposure and (2) reuse it through explicit associations, without globally retraining its parameters. Inspired by the question: *Why can a person read the name of a new car brand once and later connect it to a different vehicle?*
+ACM studies (1) one-exposure association and (2) reuse through existing representations without retraining the complete model. Inspired by learning a new car marque from seeing its name once.
 
-## What exists today
+## Implemented
+- v0.1 pure Python vector-based associative memory and cosine nearest-neighbor search with manually supplied concept links.
+- v0.2 optional **frozen pretrained OpenCLIP** image encoder, `VisionMemory.learn_image()`, `recognize_image()`, real-photo CLI, and an initial benchmark runner for one support image per known brand plus unknown brands with split leakage checks.
+- **15 dependency-free automated tests** using *synthetic fake encoders*, **not** real-image accuracy measurements.
 
-A minimal **CPU-only, standard-library Python baseline** that stores labeled numerical vectors, links labels to provided concepts, and retrieves the nearest observation by cosine similarity. The sample vectors are **synthetic**; there is **no image encoder, no automatic discovery of concepts, no autonomous learning, no persistence, and no LLM** in version 0.1. This demonstrates a test harness, not the research hypothesis.
-
-## Quickstart
-
-Python 3.10+ required, no dependencies:
-
+## Run
 ```bash
 python -m unittest discover -s tests -v
 python -m examples.one_shot
 ```
 
-## Research questions
+For real-image installation and PowerShell commands, read [docs/VISION.md](docs/VISION.md). Quick example after installing PyTorch, Pillow and `open_clip_torch`:
 
-- RQ1: How much information can be acquired after one exposure, conditional on existing pretrained representations?
-- RQ2: Can learned knowledge transfer to genuinely novel observations without manual concept labels?
-- RQ3: Can the system learn continuously while limiting forgetting, false matches and compute usage?
+```bash
+python -m examples.vision_one_shot --support data/toyota_a.jpg --label Toyota --query data/toyota_b.jpg data/honda.jpg --device auto
+```
 
-We will compare fairly against nearest-neighbor and fixed-encoder baselines; details in `docs/EVALUATION.md`. No improvements are claimed before controlled experiments.
+The first execution may download pretrained weights. It uses a **non-calibrated example threshold** (not a probability). No local photos are sent to a hosted inference API by this program. Images and weights are not included in the repo.
 
-## Roadmap
+## Research roadmap
+- [x] Inspectable synthetic vector-memory baseline
+- [x] Optional frozen image encoder and first-pass dataset split checks
+- [ ] **Run and publish real-image measurements** and calibrate unknown rejection
+- [ ] Test logo/text leakage versus genuine unseen-body generalization
+- [ ] Add persistence, provenance, concept induction and continual-learning experiments
+- [ ] Quantify accuracy, compute, VRAM and latency against identical-backbone baselines
 
-- [x] Minimal associative store and transparent tests
-- [ ] Real image-embedding adapter with explicitly documented pretrained dependencies
-- [ ] Public data protocol with train/test identity separation and leakage checks
-- [ ] Open-set calibration, precision/recall, false acceptance and forgetting benchmarks
-- [ ] Hypothesis-driven experiments in incremental concept formation
-
-## License / contributions
-
-MIT licensed. See [LICENSE](LICENSE), [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Never commit real private images, personal data, tokens, or copyrighted datasets without permission.
+This is currently **frozen-encoder nearest-neighbor**, not a novel learner. Record negative results and statistical uncertainty. MIT license; contributions welcome via [CONTRIBUTING.md](CONTRIBUTING.md).

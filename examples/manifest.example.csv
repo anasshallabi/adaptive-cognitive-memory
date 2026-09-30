@@ -1,0 +1,4 @@
+path,label,split,vehicle_id,capture_group
+images/a_toyota.jpg,Toyota,support,toyota_car_1,photo_session_1
+images/b_toyota.jpg,Toyota,known,toyota_car_2,photo_session_2
+images/c_honda.jpg,Honda,unknown,honda_car_1,photo_session_3
