@@ -63,6 +63,14 @@ class TestExtraction(unittest.TestCase):
         with self.assertRaisesRegex(ExtractionError, "absent"):
             extractor.extract("Zentra is considered a car brand.")
 
+    def test_partial_word_span_rejected(self):
+        extractor = OllamaExtractor("test", transport=lambda _: fake_reply(
+            status="extracted", subject="tra", predicate="is_a",
+            object="car brand", positive=True
+        ))
+        with self.assertRaisesRegex(ExtractionError, "absent"):
+            extractor.extract("Zentra is considered a car brand.")
+
     def test_model_invalid_relation_rejected(self):
         extractor = OllamaExtractor("test", transport=lambda _: fake_reply(
             status="extracted", subject="Zentra", predicate="invents",
