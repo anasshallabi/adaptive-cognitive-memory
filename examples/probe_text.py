@@ -112,6 +112,8 @@ def main() -> None:
     parser.add_argument("--model", help="Existing Ollama model; omitted means rules only")
     parser.add_argument("--think", choices=["default", "on", "off"], default="default",
                         help="Ollama thinking mode: default/explicit on/explicit off; off if supported")
+    parser.add_argument("--prompt", choices=["strict", "literal"], default="strict",
+                        help="Diagnostic prompt mode; strict preserves baseline behavior")
     parser.add_argument("--case", choices=sorted(PROBES), action="append", default=[],
                         help="Predefined diagnostic case (repeatable)")
     parser.add_argument("--sentence", action="append", default=[],
@@ -122,12 +124,14 @@ def main() -> None:
         parser.error("Provide --case or --sentence")
     if args.model:
         thinking = {"default": None, "on": True, "off": False}[args.think]
-        extractor = OllamaExtractor(model=args.model, think=thinking)
+        extractor = OllamaExtractor(model=args.model, think=thinking,
+                                   prompt_mode=args.prompt)
     else:
         extractor = None
     print(json.dumps({
         "model": args.model,
         "think": args.think,
+        "prompt": args.prompt,
         "results": run_probes(sentences, model=extractor),
         "interpretation": (
             "Post-hoc diagnostic only. 'Considered', 'might', 'according to', and "
