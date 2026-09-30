@@ -13,6 +13,22 @@
 
 - **v0.5 (évaluation)** — nouveau corpus synthétique de **40 phrases**, étiquetées avant exécution de Qwen3 : 12 en développement, 28 en test. Il distingue affirmations directes, négations, hypothèses, propos rapportés et faits historiques. Les résultats Qwen3 restent **à mesurer**. [Protocole v0.5](EVALUATION_V05.md).
 
+## Premiers résultats réels de v0.5
+
+Sur le PC d'Anass, Qwen3 14B + règles a réussi **12/12 phrases
+de validation**, mais seulement **13/28 phrases de test (46,4 %)**.
+Parmi les 10 phrases qui exigeaient une abstention, le système n'en
+a rejeté correctement que 4. Des règles trop larges ont parfois
+transformé des formulations ambiguës en faits stockables.
+
+L'analyse et la liste des erreurs se trouvent dans
+[le rapport v0.5](RESULTS_V05_2026-09-30.md).
+
+Une première expérimentation **v0.6** propose un
+[filtre conservateur facultatif](CONSERVATIVE_GATE.md). Ce filtre
+heuristique peut refuser les phrases à risque avant leur mémorisation,
+mais ses performances sur des phrases vraiment nouvelles **restent à tester**.
+
 ## Commandes
 
 ```powershell
