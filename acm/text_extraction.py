@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import json
+import re
 from typing import Callable, Protocol
 import urllib.error
 import urllib.parse
@@ -64,7 +65,10 @@ def _span_in(sentence: str, proposed: str) -> bool:
     # Conservative lexical guard: a model cannot introduce novel string spans.
     # This is *not* a semantic truth check or a proof of non-hallucination.
     normalized = " ".join(proposed.strip().split()).casefold()
-    return bool(normalized) and normalized in sentence.casefold()
+    text = " ".join(sentence.strip().split()).casefold()
+    return bool(normalized) and re.search(
+        r"(?<!\\w)" + re.escape(normalized) + r"(?!\\w)", text
+    ) is not None
 
 
 @dataclass
@@ -83,8 +87,13 @@ def _request_ollama(endpoint: str, request: dict, timeout: float) -> dict:
         endpoint, data=data, headers={"Content-Type": "application/json"},
         method="POST",
     )
+    class NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, req, fp, code, msg, headers, newurl):
+            raise ExtractionError("Ollama redirect refused: loopback-only policy")
+
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as stream:
+        opener = urllib.request.build_opener(NoRedirect())
+        with opener.open(req, timeout=timeout) as stream:
             response = stream.read(65537)
         if len(response) > 65536:
             raise ExtractionError("Local backend response exceeds 64 KiB")
