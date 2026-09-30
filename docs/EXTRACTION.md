@@ -91,6 +91,28 @@ Do not compare model inference costs with the rules unless hardware, model
 weights, startup costs, RAM/VRAM and batching conditions are documented.
 An LLM's prior training is not counted as a zero-cost new concept.
 
+## Initial reproducible reference result (rules only)
+
+GitHub Actions run [36727510772](https://github.com/anasshallabi/adaptive-cognitive-memory/actions/runs/36727510772)
+on 2026-09-30 ran `python -m examples.compare_text --extractor rules --split test --summary`.
+
+| Metric | Result |
+| --- | ---: |
+| Exact-match accuracy | 4/12 (33.3%) |
+| Extraction precision / recall / F1 | 0 / 0 / 0 |
+| Correct abstention on annotated non-facts | 4/5 (80%) |
+| Runtime errors | 0 |
+| Engineering unit tests | 61 passing |
+
+This is a purposely challenging tiny synthetic **rules-only** baseline.
+All seven annotated positive test facts use unfamiliar phrasing; none was
+extracted exactly. It is neither a representative population estimate nor
+a result for a local LLM. Speed was measured on GitHub's runner and should
+not be generalized to an NVIDIA desktop or compared directly against
+model inference on different hardware.
+
+**The real v0.4 model comparison has not been executed yet.**
+
 ## Safeguards and limitations
 
 - Source sentence and caller-supplied provenance are preserved in `Claim`.
