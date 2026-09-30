@@ -5,11 +5,14 @@ on:
 jobs:
   unit-tests:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.14']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ matrix.python-version }}
       - run: python -m unittest discover -s tests -v
       - name: Compare rule baseline on held-out text cases
         run: python -m examples.compare_text --extractor rules --split test --summary
