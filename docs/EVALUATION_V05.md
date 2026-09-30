@@ -118,10 +118,16 @@ must be reported as post-hoc.
 
 ## Current status
 
-**No v0.5 Ollama accuracy, inference speed, recall or generalization
-measurements exist yet.** Only schema/unit tests and rules-only
-engineering CI checks are eligible to run on GitHub, as that CI does
-not host the user's locally installed language model.
+The initial local Qwen3 14B experiment has now been executed and
+reported in [RESULTS_V05_2026-09-30.md](RESULTS_V05_2026-09-30.md):
+12/12 correct in development and 13/28 in test (46.4% exact);
+only 4/10 required test abstentions were correct. All observed cases
+and major failure types are documented. GitHub CI independently runs
+unit tests only, not Ollama. These results measure this tiny
+hand-authored synthetic set, **not generalization in the wild**.
+
+A new [conservative gate](CONSERVATIVE_GATE.md) is **opt-in and
+post-hoc**; it must not replace or overwrite these frozen results.
 
 Converting what a person or model *asserted* into memory is one-shot
 **fact registration**, not proof of one-shot **concept formation**.
