@@ -1,4 +1,4 @@
-# ACM — Laboratoire public d'apprentissage adaptatif (v0.5 — protocole d'évaluation)
+# ACM — Laboratoire public d'apprentissage adaptatif (v0.7 — preuves révisables)
 
 ## Vision
 
@@ -28,6 +28,29 @@ Une première expérimentation **v0.6** propose un
 [filtre conservateur facultatif](CONSERVATIVE_GATE.md). Ce filtre
 heuristique peut refuser les phrases à risque avant leur mémorisation,
 mais ses performances sur des phrases vraiment nouvelles **restent à tester**.
+
+## Résultat du filtre et nouvelle mémoire v0.7
+
+Le mode conservateur a obtenu **21/28 (75 %)** contre **13/28
+(46,4 %)** pour le moteur hybride initial, sur **les mêmes phrases
+déjà étudiées**. Les dix abstentions attendues ont été respectées.
+Ce résultat est un test de régression *après analyse des erreurs* :
+il ne mesure pas une généralisation indépendante. Voir le
+[rapport de v0.5 et du filtre](RESULTS_V05_2026-09-30.md).
+
+La mémoire v0.7 introduit un **registre de preuves révisables**.
+Une nouvelle affirmation reste `candidate` jusqu'à une décision
+explicite d'un examinateur. Le système conserve la source, les
+décisions, leurs motifs et les rétractations, et exclut les
+affirmations contestées de son graphe d'inférence approuvé.
+Ce prototype ne vérifie pas automatiquement la vérité :
+[documentation complète](EVIDENCE_LEDGER.md).
+
+Le test de démonstration ne nécessite ni Ollama ni GPU :
+
+```powershell
+python -m examples.evidence_review
+```
 
 ## Commandes
 

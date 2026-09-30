@@ -18,3 +18,5 @@ jobs:
         run: python -m examples.compare_text --extractor rules --split test --summary
       - name: Validate new v0.5 benchmark on dev split (rule baseline only)
         run: python -m examples.compare_text --dataset benchmarks/text_v05.jsonl --extractor rules --split dev --summary
+      - name: Exercise evidence review demo (no Ollama needed)
+        run: python -m examples.evidence_review > /dev/null
