@@ -117,6 +117,9 @@ class OllamaExtractor:
     endpoint: str = "http://127.0.0.1:11434/api/chat"
     timeout: float = 60.0
     transport: Callable[[dict], dict] | None = field(default=None, repr=False)
+    # None preserves Ollama default, False disables thinking where supported.
+    think: bool | None = None
+    last_metadata: dict = field(default_factory=dict, init=False, repr=False)
 
     def __post_init__(self) -> None:
         parsed = urllib.parse.urlparse(self.endpoint)
@@ -129,8 +132,11 @@ class OllamaExtractor:
             raise ValueError("Ollama endpoint must be a local http loopback /api/chat URL")
         if not self.model.strip() or self.timeout <= 0:
             raise ValueError("Nonempty model and positive timeout required")
+        if self.think is not None and type(self.think) is not bool:
+            raise ValueError("think must be True, False or None")
 
     def extract(self, text: str, *, source: str = "user") -> Claim | None:
+        self.last_metadata = {}
         sentence = _validate_input(text, source)
         if "?" in sentence or "？" in sentence:
             return None
@@ -145,11 +151,27 @@ class OllamaExtractor:
             "stream": False,
             "options": {"temperature": 0},
         }
+        if self.think is not None:
+            payload["think"] = self.think
         response = (
             self.transport(payload)
             if self.transport is not None
             else _request_ollama(self.endpoint, payload, self.timeout)
         )
+        # Only report aggregate timing/token metadata and whether a thinking
+        # field exists; never expose the model's chain-of-thought text.
+        if isinstance(response, dict):
+            msg = response.get("message", {})
+            self.last_metadata = {
+                "thinking_present": bool(msg.get("thinking")) if isinstance(msg, dict) else False,
+                **{
+                    key: response[key] for key in (
+                        "load_duration", "total_duration",
+                        "prompt_eval_count", "prompt_eval_duration",
+                        "eval_count", "eval_duration",
+                    ) if type(response.get(key)) in (int, float)
+                },
+            }
         try:
             reply = response["message"]["content"]
             fields = json.loads(reply)
@@ -158,6 +180,7 @@ class OllamaExtractor:
         if not isinstance(fields, dict) or set(fields) != set(OUTPUT_SCHEMA["required"]):
             raise ExtractionError("Structured output keys do not match schema")
         status = fields["status"]
+        self.last_metadata["structured_status"] = status
         if status == "abstain":
             return None
         if status != "extracted":
