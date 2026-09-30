@@ -1,22 +1,30 @@
-# ACM v0.2 — Architecture
+# ACM v0.3 — Architecture
 
 ```text
-Image path -> OpenCLIPEncoder.embed() [frozen pretrained network]
-                          |
-                          v
-            CognitiveMemory.learn()
-             /                     \
-     embedding stored         label -> supplied concepts
-             |
-             v
-       cosine nearest neighbor + threshold
-             |
-             v
-           label / unknown
+Numeric vectors -> CognitiveMemory (v0.1) -> cosine match / unknown
+
+Photos -> OpenCLIPEncoder (frozen pretrained; optional v0.2)
+                        |
+                        v
+                   VisionMemory -> label / unknown
+
+Controlled FR/EN sentence -> parse_claim (explicit grammar)
+                        |
+                        v
+                    TextMemory -> facts + provenance
+                        |
+            direct / bounded is_a inference
+                        |
+                        v
+            supported / negated / conflict / unknown
+
+MultimodalMemory: exact explicit image label -> TextMemory.about(label)
 ```
 
-The v0.1 numeric feature API remains available. `acm/vision.py` provides a mockable image encoder interface, a frozen pretrained OpenCLIP implementation with CPU/CUDA selection and official RGB preprocessing, and a `VisionMemory` wrapper. The `acm/benchmark.py` runner validates one-shot support and split metadata and reports basic known-vs-unknown performance. Image encoder dependencies are optional for lightweight tests.
+The perception/representation layer and memory are intentionally separate. Graph facts do not rewrite pretrained neural weights; the bridge matches user-supplied labels, not jointly learned perceptual concepts.
 
-Memory use scales O(Nd) for N observations of dimensionality d, lookup O(Nd) (plus image-encoding inference); image encoder pretraining and inference costs are not avoided. Stored associations do not persist after process exit. A cosine threshold is not a calibrated probability.
+**Implemented:** direct fact retention, source identifiers, duplicate suppression per source, limited syntax, explicit negative evidence, positive `is_a` transitive closure with configurable hop bound. Results include source paths.
 
-**Not implemented:** visual concept induction, pretrained-free perception, reasoning, causal world models, contradiction handling, persistence, and measured accuracy/efficiency improvements. Generalization from one exemplar is a testable hypothesis, not a demonstrated result. Read [the detailed vision guide](VISION.md).
+**Missing:** persistence, temporal/versioned claims, truth verification, contradiction resolution, general language parsing, automatic concept formation, independent semantic cross-modal grounding, causal reasoning.
+
+**Complexity:** vector nearest-neighbor O(Nd) for N vectors of length d; current text inference uses repeated scans of the claim list (small-scale baseline; not an indexed graph engine). Large cyclic graphs with many paths may be expensive; max_hops mitigates but does not provide global complexity bounds. See [TEXT.md](TEXT.md) and [VISION.md](VISION.md).
