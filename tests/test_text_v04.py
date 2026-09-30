@@ -36,6 +36,51 @@ class TestExtraction(unittest.TestCase):
         self.assertIsInstance(called[0]["format"], dict)
         self.assertEqual(called[0]["options"]["temperature"], 0)
 
+    def test_explicit_thinking_off_sent_to_ollama(self):
+        requests = []
+        def transport(payload):
+            requests.append(payload)
+            return fake_reply(status="extracted", subject="Zentra",
+                              predicate="is_a", object="car brand", positive=True)
+        extractor = OllamaExtractor("test", transport=transport, think=False)
+        result = extractor.extract("Zentra is considered a car brand.")
+        self.assertEqual(requests[0]["think"], False)
+        self.assertEqual(result.predicate, "is_a")
+
+    def test_default_thinking_parameter_not_sent(self):
+        requests = []
+        def transport(payload):
+            requests.append(payload)
+            return fake_reply(status="abstain", subject="",
+                              predicate="none", object="", positive=True)
+        extractor = OllamaExtractor("test", transport=transport)
+        self.assertIsNone(extractor.extract("Zentra is considered a car brand."))
+        self.assertNotIn("think", requests[0])
+        self.assertEqual(extractor.last_metadata["structured_status"], "abstain")
+
+    def test_thinking_telemetry_excludes_model_reasoning_text(self):
+        secret = "Do not publish model reasoning."
+        extractor = OllamaExtractor("test", transport=lambda _: {
+            "message": {
+                "content": json.dumps({
+                    "status": "abstain", "subject": "", "predicate": "none",
+                    "object": "", "positive": True,
+                }),
+                "thinking": secret,
+            },
+            "eval_count": 35,
+            "total_duration": 456000000,
+        })
+        self.assertIsNone(extractor.extract("Zentra is considered a car brand."))
+        self.assertTrue(extractor.last_metadata["thinking_present"])
+        self.assertEqual(extractor.last_metadata["eval_count"], 35)
+        self.assertEqual(extractor.last_metadata["structured_status"], "abstain")
+        self.assertNotIn(secret, json.dumps(extractor.last_metadata))
+
+    def test_reject_invalid_thinking_option(self):
+        with self.assertRaises(ValueError):
+            OllamaExtractor("test", think="off")
+
     def test_local_endpoint_only(self):
         with self.assertRaises(ValueError):
             OllamaExtractor("test", endpoint="https://example.com/api/chat")
