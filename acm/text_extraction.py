@@ -67,7 +67,7 @@ def _span_in(sentence: str, proposed: str) -> bool:
     normalized = " ".join(proposed.strip().split()).casefold()
     text = " ".join(sentence.strip().split()).casefold()
     return bool(normalized) and re.search(
-        r"(?<!\\w)" + re.escape(normalized) + r"(?!\\w)", text
+        r"(?<!\w)" + re.escape(normalized) + r"(?!\w)", text
     ) is not None
 
 
