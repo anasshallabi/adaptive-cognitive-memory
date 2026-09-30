@@ -81,6 +81,37 @@ class TestExtraction(unittest.TestCase):
         with self.assertRaises(ValueError):
             OllamaExtractor("test", think="off")
 
+    def test_literal_prompt_differs_without_changing_schema(self):
+        from acm.text_extraction import LITERAL_CLAIM_PROMPT, SYSTEM_PROMPT
+        requests = []
+        def mock_request(payload):
+            requests.append(payload)
+            return fake_reply(status="extracted", subject="Zentra",
+                              predicate="is_a", object="car brand", positive=True)
+        extractor = OllamaExtractor("test", transport=mock_request,
+                                    think=False, prompt_mode="literal")
+        result = extractor.extract("Zentra is a car brand.")
+        self.assertEqual(result.predicate, "is_a")
+        self.assertEqual(requests[0]["messages"][0]["content"], LITERAL_CLAIM_PROMPT)
+        self.assertNotEqual(LITERAL_CLAIM_PROMPT, SYSTEM_PROMPT)
+        self.assertEqual(requests[0]["format"]["properties"]["status"]["type"], "string")
+        self.assertEqual(requests[0]["think"], False)
+
+    def test_default_prompt_is_unchanged(self):
+        from acm.text_extraction import SYSTEM_PROMPT
+        requests = []
+        extractor = OllamaExtractor("test", transport=lambda payload: (
+            requests.append(payload) or
+            fake_reply(status="abstain", subject="", predicate="none",
+                       object="", positive=True)
+        ))
+        self.assertIsNone(extractor.extract("Zentra is a car brand."))
+        self.assertEqual(requests[0]["messages"][0]["content"], SYSTEM_PROMPT)
+
+    def test_invalid_prompt_mode_rejected(self):
+        with self.assertRaisesRegex(ValueError, "prompt_mode"):
+            OllamaExtractor("test", prompt_mode="anything")
+
     def test_local_endpoint_only(self):
         with self.assertRaises(ValueError):
             OllamaExtractor("test", endpoint="https://example.com/api/chat")
