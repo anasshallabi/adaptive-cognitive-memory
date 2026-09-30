@@ -1,4 +1,4 @@
-# ACM — Laboratoire public d'apprentissage adaptatif (v0.4)
+# ACM — Laboratoire public d'apprentissage adaptatif (v0.5 — protocole d'évaluation)
 
 ## Vision
 
@@ -10,6 +10,8 @@
 - **v0.2** — perception d'images avec OpenCLIP préentraîné, tests visuels réels encore à mener.
 - **v0.3** — phrases françaises/anglaises dans une grammaire limitée ; mémorisation de faits sourcés, inférences `is_a`, contradictions visibles.
 - **v0.4** — **extracteur de texte optionnel via Ollama local**, pour essayer des formulations qui dépassent la grammaire codée. Le modèle doit être préentraîné ; ACM conserve les faits extraits sans modifier les poids de ce modèle. Banc d'essai synthétique de 20 phrases, avec validation et test séparés.
+
+- **v0.5 (évaluation)** — nouveau corpus synthétique de **40 phrases**, étiquetées avant exécution de Qwen3 : 12 en développement, 28 en test. Il distingue affirmations directes, négations, hypothèses, propos rapportés et faits historiques. Les résultats Qwen3 restent **à mesurer**. [Protocole v0.5](EVALUATION_V05.md).
 
 ## Commandes
 
@@ -35,6 +37,8 @@ Pour sonder deux phrases sans relancer tout le benchmark :
 ```powershell
 python -m examples.probe_text --model qwen3:14b --case direct --case attributed
 ```
+
+Le prompt alternatif a extrait une affirmation directe en français et s'est abstenu sur une attribution et une possibilité, **sur trois exemples de diagnostic seulement**. Ces résultats sont archivés dans [notre journal](RESULTS_V04_2026-09-30.md) ; ils ne prouvent pas une généralisation.
 
 Consulte aussi [l'expérience v0.4](EXTRACTION.md), [le moteur textuel v0.3](TEXT.md), [le module visuel](VISION.md) et [la méthode d'évaluation](EVALUATION.md).
 
