@@ -24,6 +24,9 @@ PROBES = {
     "hedged": "Zentra might be a car brand.",
     "reported": "According to a reviewer, Zentra is a car brand.",
     "past": "Zentra used to be a car brand.",
+    "fr_direct": "Zentra est une marque automobile.",
+    "fr_attributed": "Zentra est considéré comme une marque automobile.",
+    "fr_hedged": "Zentra pourrait être une marque automobile.",
 }
 
 
