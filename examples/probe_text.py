@@ -38,6 +38,7 @@ class ProbeResult:
     model_status: str
     model_latency_ms: float | None
     model_error: str | None
+    model_telemetry: dict | None
 
     def as_dict(self) -> dict:
         return {
@@ -47,6 +48,7 @@ class ProbeResult:
             "model_status": self.model_status,
             "model_latency_ms": self.model_latency_ms,
             "model_error": self.model_error,
+            "model_telemetry": self.model_telemetry,
         }
 
 
@@ -98,6 +100,7 @@ def run_probes(
             model_status=status,
             model_latency_ms=latency_ms,
             model_error=error,
+            model_telemetry=(dict(getattr(model, "last_metadata", {})) if model is not None else None),
         ).as_dict())
     return report
 
@@ -107,6 +110,8 @@ def main() -> None:
         description="Local FR/EN epistemic-modality probe (diagnostic, not benchmark)"
     )
     parser.add_argument("--model", help="Existing Ollama model; omitted means rules only")
+    parser.add_argument("--think", choices=["default", "on", "off"], default="default",
+                        help="Ollama thinking mode: default/explicit on/explicit off; off if supported")
     parser.add_argument("--case", choices=sorted(PROBES), action="append", default=[],
                         help="Predefined diagnostic case (repeatable)")
     parser.add_argument("--sentence", action="append", default=[],
@@ -115,9 +120,14 @@ def main() -> None:
     sentences = [PROBES[c] for c in args.case] + args.sentence
     if not sentences:
         parser.error("Provide --case or --sentence")
-    extractor = OllamaExtractor(model=args.model) if args.model else None
+    if args.model:
+        thinking = {"default": None, "on": True, "off": False}[args.think]
+        extractor = OllamaExtractor(model=args.model, think=thinking)
+    else:
+        extractor = None
     print(json.dumps({
         "model": args.model,
+        "think": args.think,
         "results": run_probes(sentences, model=extractor),
         "interpretation": (
             "Post-hoc diagnostic only. 'Considered', 'might', 'according to', and "
