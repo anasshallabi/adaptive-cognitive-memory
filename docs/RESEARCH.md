@@ -14,10 +14,24 @@ Why can a person see a new car brand once, remember its name, and connect it to 
 
 ## Progress
 
+- v0.5: frozen synthetic text evaluation; local hybrid result 13/28 exact on test.
+- v0.6: post-hoc conservative guard; 21/28 on the same known test, explicitly not an independent gain.
+- v0.7: explicit candidate/review/reject/retract evidence states.
+- v0.8: local SQLite persistence and replay of reviewed evidence across restarts.
+- v0.9: formal synthetic test of whether one positive example uniquely identifies a new opaque concept rule; matched exemplar/similarity/version-space/oracle baselines.
+
 - v0.1: synthetic vector memory (nearest-neighbor).
 - v0.2: optional frozen OpenCLIP image front-end and split checks; real-photo empirical results pending.
 - v0.3: deterministic FR/EN controlled-grammar fact memory and bounded graph traversal.
 - v0.4: optional local pretrained Ollama structured extractor, source-span constraints, same fact memory, synthetic held-out paraphrase test suite. Tests validate engineering behavior only; **there are no claimed local-model accuracy numbers yet**.
+
+## Current concept-induction hypothesis
+
+Binding a new arbitrary label after one exposure is easy. Inferring the
+latent rule that defines a concept is a different problem and can be
+logically underdetermined from one positive example. v0.9 makes this
+ambiguity explicit instead of counting successful nearest-neighbor retrieval
+as concept formation.
 
 ## Scientific honesty / falsification
 
