@@ -33,6 +33,15 @@ logically underdetermined from one positive example. v0.9 makes this
 ambiguity explicit instead of counting successful nearest-neighbor retrieval
 as concept formation.
 
+## v0.10 matched real representation control
+
+The next visual experiment gives current ACM and a direct cosine
+nearest-neighbor baseline the **same frozen OpenCLIP embeddings** and threshold.
+With one support vector per label they are expected to agree exactly. If they
+do, successful recognition is evidence for label binding over a pretrained
+representation, not a distinct ACM visual learner. Threshold calibration is
+restricted to separate validation images.
+
 ## Scientific honesty / falsification
 
 At present, ACM is a combination of classic associative retrieval and symbolic graph operations. If a simple knowledge graph or pretrained model with retrieval matches its results, there is no demonstrated advantage. If model-assisted paraphrase extraction improves accuracy at substantial GPU cost, report both quality and total incremental cost. If it does not, publish that too.
