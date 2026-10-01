@@ -105,6 +105,85 @@ def _metrics(rows: list[dict]) -> dict:
     }
 
 
+def calibrate_rejection_threshold(
+    samples: list[ImageSample],
+    encoder: ImageEncoder,
+) -> dict:
+    """Choose a rejection threshold on *validation data only*.
+
+    Objective = mean(known top-1 accuracy after thresholding,
+                     unknown rejection rate).
+    Candidate thresholds come from observed maximum support similarities plus
+    boundary values. Ties prefer the *higher* threshold (more conservative).
+
+    This function must never receive final test samples.
+    """
+    encoded = encode_samples(samples, encoder)
+    supports = [row for row in encoded if row.sample.split == "support"]
+    queries = [row for row in encoded if row.sample.split != "support"]
+
+    nn = DirectNearestNeighbor()
+    for row in supports:
+        nn.add(row.sample.label, row.embedding)
+
+    raw = []
+    scores = set()
+    for row in queries:
+        # threshold=-1 guarantees a winner for any nonempty support bank.
+        prediction = nn.recognize(row.embedding, threshold=-1)
+        score = float(prediction["score"])
+        scores.add(score)
+        raw.append({
+            "sample": row.sample,
+            "winner": prediction["label"],
+            "score": score,
+        })
+
+    candidates = sorted({-1.0, 1.0, *scores})
+    # Midpoints allow separation when scores differ without placing threshold
+    # exactly on an observed sample.
+    ordered = sorted(scores)
+    candidates.extend(
+        (a + b) / 2 for a, b in zip(ordered, ordered[1:]) if a != b
+    )
+    candidates = sorted(set(candidates))
+
+    evaluated = []
+    for threshold in candidates:
+        known = [r for r in raw if r["sample"].split == "known"]
+        unknown = [r for r in raw if r["sample"].split == "unknown"]
+        known_accuracy = sum(
+            r["score"] >= threshold and r["winner"] == r["sample"].label
+            for r in known
+        ) / len(known)
+        unknown_rejection = sum(
+            r["score"] < threshold for r in unknown
+        ) / len(unknown)
+        balanced = (known_accuracy + unknown_rejection) / 2
+        evaluated.append({
+            "threshold": threshold,
+            "known_accuracy": known_accuracy,
+            "unknown_rejection_rate": unknown_rejection,
+            "balanced_objective": balanced,
+        })
+
+    best = max(
+        evaluated,
+        key=lambda r: (r["balanced_objective"], r["threshold"]),
+    )
+    return {
+        "threshold": round(best["threshold"], 6),
+        "known_accuracy": best["known_accuracy"],
+        "unknown_rejection_rate": best["unknown_rejection_rate"],
+        "balanced_objective": best["balanced_objective"],
+        "candidate_thresholds_evaluated": len(evaluated),
+        "warning": (
+            "Threshold is fitted to this validation manifest. Freeze it before "
+            "running any final test manifest."
+        ),
+    }
+
+
 def evaluate_matched_one_shot(
     samples: list[ImageSample],
     encoder: ImageEncoder,
