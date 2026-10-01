@@ -24,3 +24,5 @@ jobs:
         run: python -m examples.durable_review > /dev/null
       - name: Run v0.9 one-shot concept ambiguity development report
         run: python -m examples.concept_one_shot --split dev --summary
+      - name: Run matched vision baseline unit tests (fake encoder only)
+        run: python -m unittest tests.test_vision_compare tests.test_vision_calibration -v
