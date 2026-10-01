@@ -1,8 +1,8 @@
 # Adaptive Cognitive Memory (ACM)
 
-**Research prototype v0.8 durable evidence review — open-source experiments on memory, language, and vision. No human-level intelligence or novel general learning has been demonstrated.**
+**Research prototype v0.9 concept-induction falsification — open-source experiments on memory, language, and vision. No human-level intelligence or novel general learning has been demonstrated.**
 
-[Français](docs/README.fr.md) · [Persistent evidence v0.8](docs/DURABLE_EVIDENCE.md) · [Reviewed evidence v0.7](docs/EVIDENCE_LEDGER.md) · [Frozen v0.5 evaluation](docs/EVALUATION_V05.md) · [Text v0.4 experiment](docs/EXTRACTION.md) · [Controlled language v0.3](docs/TEXT.md) · [Vision](docs/VISION.md) · [Evaluation](docs/EVALUATION.md) · [Research](docs/RESEARCH.md)
+[Français](docs/README.fr.md) · [One-shot concept study v0.9](docs/CONCEPT_V09.md) · [Persistent evidence v0.8](docs/DURABLE_EVIDENCE.md) · [Reviewed evidence v0.7](docs/EVIDENCE_LEDGER.md) · [Frozen v0.5 evaluation](docs/EVALUATION_V05.md) · [Text v0.4 experiment](docs/EXTRACTION.md) · [Controlled language v0.3](docs/TEXT.md) · [Vision](docs/VISION.md) · [Evaluation](docs/EVALUATION.md) · [Research](docs/RESEARCH.md)
 
 ACM investigates whether an artificial system can memorize new facts from a single observation, connect them to earlier knowledge and reuse them without globally retraining a large neural model.
 
@@ -20,6 +20,8 @@ ACM investigates whether an artificial system can memorize new facts from a sing
 
 - **v0.8 local SQLite evidence** — atomic review-event records, reopening and replay, conflict-aware approved graph after restart, standard-library-only implementation, no model required. [Limitations and demo](docs/DURABLE_EVIDENCE.md).
 
+- **v0.9 one-shot concept ambiguity study** — opaque binary features and arbitrary new labels test whether one positive example actually identifies a hidden concept rule. Includes exact-exemplar, fixed Jaccard, conservative version-space and oracle controls. No pretrained model or natural semantics are used in this first falsification experiment. [Protocol](docs/CONCEPT_V09.md).
+
 **Important:** v0.4 uses a **pretrained** model for flexible language extraction; it doesn't train that model from one sentence or discover concepts autonomously. Storing a claim is not fact-checking. A [first local Qwen3 14B run](docs/RESULTS_V04_2026-09-30.md) matched rules-only accuracy at **4/12** on a small hand-written test and took much longer. A [follow-up attribution/uncertainty analysis](docs/MODALITY.md) warns that some original benchmark labels may conflate a reported classification with a direct fact.
 
 ## Quickstart (Python 3.10+)
@@ -29,6 +31,7 @@ python -m unittest discover -s tests -v
 python -m examples.text_one_shot
 python -m examples.evidence_review
 python -m examples.durable_review
+python -m examples.concept_one_shot --split test --summary
 python -m examples.compare_text --extractor rules --split test
 ```
 
@@ -59,6 +62,7 @@ The default rule-based mode needs **no external Python dependencies, model downl
 - [ ] Evaluate conservative screening on a fresh independently annotated test set
 - [x] Persist review events with local SQLite and recover after simulated restarts
 - [ ] Extend evidence to modality, time and robust entity resolution
-- [ ] Evaluate concept induction versus matched graph, retrieval and pretrained-model baselines
+- [x] Add a transparent one-positive concept-identifiability experiment against exemplar/similarity/oracle controls
+- [ ] Extend concept evaluation to independent real representations and a matched pretrained-model baseline
 
 Our objective is to **test hypotheses**, not to rebrand classic symbolic graphs or pretrained LLM capabilities as a new learning breakthrough. MIT license, community contributions welcome.

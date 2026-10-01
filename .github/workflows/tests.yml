@@ -22,3 +22,5 @@ jobs:
         run: python -m examples.evidence_review > /dev/null
       - name: Exercise persistent SQLite replay and correction demo
         run: python -m examples.durable_review > /dev/null
+      - name: Run v0.9 one-shot concept ambiguity development report
+        run: python -m examples.concept_one_shot --split dev --summary
