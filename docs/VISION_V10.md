@@ -115,6 +115,75 @@ python -c "import torch; print(torch.__version__); print('CUDA:', torch.cuda.is_
 The first OpenCLIP run can download pretrained weights. Local images are read
 from disk; ACM does not intentionally upload them to a hosted inference API.
 
+## Concrete first validation collection
+
+For the first local run, keep the final test categories untouched. A practical
+validation set is:
+
+| Role | Category | Photos |
+| --- | --- | ---: |
+| known | `MUG` | 1 support + 2 different physical mugs |
+| known | `SHOE` | 1 support + 2 different shoes/pairs |
+| known | `BOTTLE` | 1 support + 2 different bottles |
+| unknown | `REMOTE` | 1 query |
+| unknown | `BOOK` | 1 query |
+| unknown | `MOUSE` | 1 query |
+
+That is **12 images total**. If you do not own three distinct physical
+instances for a known category, replace that category before taking any final
+test photos.
+
+Suggested local layout (the `data/` directory is Git-ignored):
+
+```
+data/
+  vision_v10_validation.csv
+  vision_v10_validation/
+    mug_support.jpg
+    mug_query_1.jpg
+    mug_query_2.jpg
+    shoe_support.jpg
+    shoe_query_1.jpg
+    shoe_query_2.jpg
+    bottle_support.jpg
+    bottle_query_1.jpg
+    bottle_query_2.jpg
+    remote_unknown.jpg
+    book_unknown.jpg
+    mouse_unknown.jpg
+```
+
+Take support photos in one capture setup and known queries in a **different**
+setup (different time/background/position where practical). Unknown images
+must not be copied/cropped versions of any support image.
+
+Example manifest, relative to `data/vision_v10_validation.csv`:
+
+```csv
+path,label,split,vehicle_id,capture_group
+vision_v10_validation/mug_support.jpg,MUG,support,mug_01,val_support
+vision_v10_validation/shoe_support.jpg,SHOE,support,shoe_01,val_support
+vision_v10_validation/bottle_support.jpg,BOTTLE,support,bottle_01,val_support
+vision_v10_validation/mug_query_1.jpg,MUG,known,mug_02,val_known_a
+vision_v10_validation/mug_query_2.jpg,MUG,known,mug_03,val_known_b
+vision_v10_validation/shoe_query_1.jpg,SHOE,known,shoe_02,val_known_a
+vision_v10_validation/shoe_query_2.jpg,SHOE,known,shoe_03,val_known_b
+vision_v10_validation/bottle_query_1.jpg,BOTTLE,known,bottle_02,val_known_a
+vision_v10_validation/bottle_query_2.jpg,BOTTLE,known,bottle_03,val_known_b
+vision_v10_validation/remote_unknown.jpg,REMOTE,unknown,remote_01,val_unknown
+vision_v10_validation/book_unknown.jpg,BOOK,unknown,book_01,val_unknown
+vision_v10_validation/mouse_unknown.jpg,MOUSE,unknown,mouse_01,val_unknown
+```
+
+Before OpenCLIP is loaded, validate the files and metadata:
+
+```powershell
+python -m examples.check_vision_manifest --manifest data/vision_v10_validation.csv
+```
+
+The checker catches missing files and declared ID/capture-group leakage; it
+cannot detect that two filenames secretly contain the same photo.
+
 ## Phase 1 — calibrate on validation only
 
 ```powershell
