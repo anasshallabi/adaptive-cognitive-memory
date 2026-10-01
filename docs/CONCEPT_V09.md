@@ -124,6 +124,39 @@ python -m examples.concept_one_shot --split test
 Changing `--jaccard-threshold` after looking at test results is a new
 post-hoc experiment and must not replace the fixed 0.5 result.
 
+## First deterministic results
+
+GitHub CI (Python 3.11 and 3.14) reproduced the same frozen metrics with
+133 unit tests passing:
+
+| Test metric | Result |
+| --- | ---: |
+| Test episodes | 8 |
+| Query objects | 64 |
+| Exact-exemplar accuracy | **62.5%** |
+| Fixed Jaccard (0.5) accuracy | **56.25%** |
+| Hidden-rule oracle accuracy | **100%** |
+| Hidden rule uniquely identified after one positive | **0/8 (0%)** |
+| Conservative one-shot coverage | **12/64 (18.75%)** |
+| Accuracy when one-shot learner is certain | **100%** |
+| Hidden rule uniquely identified after designed negatives | **4/8 (50%)** |
+| Conservative coverage after designed negatives | **52/64 (81.25%)** |
+| Accuracy when contrastive learner is certain | **100%** |
+
+The 100% conditional accuracy is **not** a perfect concept learner: it is a
+conservative consequence of returning `unknown` whenever surviving rules
+disagree. Coverage is therefore essential. Likewise, the oracle score is only
+a sanity check because the oracle is given the hidden rule.
+
+The central finding is negative but useful: **one positive example never
+identified the concept rule uniquely in this hypothesis class**. The same
+example was compatible with ten different one-/two-feature conjunctions.
+Additional negative evidence greatly reduced ambiguity, but singleton hidden
+rules still had four compatible explanations.
+
+The exemplar and Jaccard baselines can make more predictions, but their
+moderate accuracy does not establish that they recovered the hidden rule.
+
 ## What would count as evidence?
 
 This benchmark can demonstrate **underdetermination** and compare transparent
